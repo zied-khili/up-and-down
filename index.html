@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<link rel="stylesheet" href="index.css" />
+</head>
+<body onload="startGame()">
+<script>
+
+var myGamePiece;
+var myObstacles = [];
+var myScore;
+
+// we declare a function and we use component :Components are independent and reusable bits of codeThey serve the same purpose as JavaScript functions, but work in isolation and return HTML
+//Components come in two types, Class components and Function components,
+
+function startGame() {
+    myGamePiece = new component(30, 30, "red", 10, 120);
+    myScore = new component("30px", "Consolas", "black", 280, 40, "text");// component has width height color ...
+    myGameArea.start();
+}
+
+
+var myGameArea = {//this code sets up the game area and initializes the game loop, which will continuously update and redraw the canvas to create the illusion of animation and gameplay.
+    canvas : document.createElement("canvas"), 
+    // this is from where i learned about canvas which is an box where the game will be played https://www.w3schools.com/jsref/dom_obj_canvas.asp
+    start : function() { 
+        this.canvas.width = 480; 
+        // we used this becausei'm here in the local scope of the function and i declared the  canvas : document.createElement("canvas"),  outside of the scope of the function so to reach it i need to use this
+        this.canvas.height = 270;
+        this.context = this.canvas.getContext("2d"); 
+        // here is the link where i learned from get context https://www.w3schools.com/html/tryit.asp?filename=tryhtml5_canvas_tut_path
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0; // frameno attribute related to canvas
+        this.interval = setInterval(updateGameArea, 20);
+        },
+    clear : function() { 
+        // is used to clear the canvas element before each frame is redrawn.
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    },
+    stop : function() {
+        //This method can be used to stop the game when certain conditions are met, such as the player winning or losing the game, or when the game is paused or reset.
+        clearInterval(this.interval);
+    }
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type; 
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;    
+    this.update = function() { // this function allows the creation of different types of components with their own dimensions, position, and appearance, and provides a method to update and redraw these components on the game area.
+
+        ctx = myGameArea.context;
+        if (this.type == "text") {//type is used to differentiate between shape components and text components.
+            //If type is equal to "text", the text component is drawn using the fillText() method on the context. The font property is set to the combination of width and height, and fillStyle is set to color. The text property is the text to be displayed on the component, which is not defined in this code snippet but should be defined when creating a new text component.
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else {//If type is not equal to "text", the shape component is drawn using the fillRect() method on the context. fillStyle is set to color, and the rectangle is drawn with the dimensions specified by width and height, and the position specified by x and y.
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+    this.newPos = function() {//This method is typically called within the game loop to update the position of components before they are redrawn on the canvas. By changing the speedX and speedY values of a component, the position of the component can be changed in a controlled manner, allowing for movement and animation in the game.
+        this.x += this.speedX;
+        this.y += this.speedY;        
+    }
+    this.crashWith = function(otherobj) {//This method is typically called within the game loop to detect collisions between different components in the game. If a collision is detected, the game can respond by updating the game state or taking other actions such as reducing the player's score or ending the game.
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            crash = false;
+        }
+        return crash;
+    }// first we  calculates the positions of the edges of both component objects with using their x, y, width, and height properties. It then checks if any of the edges of the first component object intersect with any of the edges of the other component object. If there is no intersection, the two objects are not colliding, and the method returns false. Otherwise, the two objects are colliding, and the method returns true
+}
+
+function updateGameArea() {
+    //that is called repeatedly within the game loop to update the game state and redraw the game area on the canvas.
+    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (myGamePiece.crashWith(myObstacles[i])) {
+            myGameArea.stop();
+            return;
+        } 
+    }
+    myGameArea.clear();
+    myGameArea.frameNo += 1;
+    if (myGameArea.frameNo == 1 || everyinterval(150)) {//By repeatedly calling this code block within the game loop, the game generates new obstacles at regular intervals to challenge the player and increase the difficulty of the game.
+        x = myGameArea.canvas.width;
+        minHeight = 20;
+        maxHeight = 200;
+        height = Math.floor(Math.random()*(maxHeight-minHeight+1)+minHeight);
+        minGap = 50;
+        maxGap = 200;
+        gap = Math.floor(Math.random()*(maxGap-minGap+1)+minGap);
+        myObstacles.push(new component(10, height, "green", x, 0));
+        myObstacles.push(new component(10, x - height - gap, "green", x, height + gap));
+    }
+    for (i = 0; i < myObstacles.length; i += 1) {//This function updates the game area on every frame. It checks for collisions between the game piece and obstacles and stops the game if a collision occurs. It also updates the position and speed of obstacles, updates the score, and updates the position and appearance of the game piece.
+        myObstacles[i].speedX = -1;
+        myObstacles[i].newPos();
+        myObstacles[i].update();
+    }
+    myScore.text="SCORE: " + myGameArea.frameNo;
+    myScore.update();
+    myGamePiece.newPos();    
+    myGamePiece.update();
+}
+
+function everyinterval(n) {//The everyinterval function is used to determine if a certain number of frames have passed since the last time a certain action was performed. It takes in an argument n, which represents the number of frames that must pass before the function returns true.
+//The function calculates how many times nfits into the current frame count myGameAreaframeNo by dividing them and checking if the result is a whole number . If the result is a whole number, it means that nnumber of frameshave passed since the last time the action was performed, so the function returns true. Otherwise, it returns false.
+    if ((myGameArea.frameNo / n) % 1 == 0){
+        return true;}
+    return false;
+}
+
+function moveup() {//This function sets the vertical speed of the game piece to -1, causing it to move upwards
+    myGamePiece.speedY = -1; 
+}
+
+function movedown() {//This function sets the vertical speed of the game piece to 1, causing it to move downwards.
+    myGamePiece.speedY = 1; 
+}
+
+function moveleft() {//This function sets the horizontal speed of the game piece to -1, causing it to move left.
+    myGamePiece.speedX = -1; 
+}
+
+function moveright() {//It looks like the moveleft()
+    myGamePiece.speedX = 1; 
+}
+
+function clearmove() {//The clearmove() function sets the horizontal and vertical speed of myGamePiece to 0, effectively stopping its movement. This is useful when the user stops pressing a movement key, as it prevents myGamePiece from continuing to move in that direction.
+    myGamePiece.speedX = 0; 
+    myGamePiece.speedY = 0; 
+}
+
+</script>
+<div  style="text-align:center;width:480px;color:aqua;">
+  <button onmousedown="moveup()" onmouseup="clearmove()" ontouchstart="moveup()">UP</button><br><br>
+  <button onmousedown="moveleft()" onmouseup="clearmove()" ontouchstart="moveleft()">LEFT</button>
+  <button onmousedown="moveright()" onmouseup="clearmove()" ontouchstart="moveright()">RIGHT</button><br><br>
+  <button onmousedown="movedown()" onmouseup="clearmove()" ontouchstart="movedown()">DOWN</button>
+</div>
+
+<p class="description">The score will count one point for each frame you manage to "stay alive".</p>
+</body>
+<form action="http://127.0.0.1:5500/index.html" class="inline">
+    <button type="button" onclick="window.location.reload()">start playing</button>
+</form>
+</html>

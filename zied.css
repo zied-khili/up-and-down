@@ -1,0 +1,14 @@
+body{
+ 
+   background-image: url(https://img.freepik.com/vecteurs-libre/texte-neon-temps-jeux-manette-jeu_1262-15457.jpg);
+}
+.welcome{
+    color: brown;
+    
+    text-align: center;
+    font-size: 50px;
+}
+.gg{
+    align-content: center;
+    justify-content:center; 
+}

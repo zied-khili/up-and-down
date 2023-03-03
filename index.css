@@ -1,0 +1,24 @@
+.description {
+    color: red;
+    background-color: black;
+    width: 200;
+}
+
+
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #f1f1f1;
+    width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+    left: auto;
+}
+.welcome {
+    color: darkmagenta;
+    background-color: antiquewhite;
+    width: 200;
+}
+ 
+body{
+    background-color:darkgray;
+}
